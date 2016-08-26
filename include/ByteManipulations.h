@@ -15,11 +15,11 @@
 #include <iomanip>
 
 template <typename T>
-const std::uint8_t* ParseValue(const std::uint8_t* start, T& data, size_t size) {
+const std::uint8_t* ParseValue(const std::uint8_t* start, T& data,
+                               size_t size) {
   const std::uint8_t* end = start + size;
   std::copy(start, end, reinterpret_cast<std::uint8_t*>(&data));
   return end;
 }
 
-
-#endif //BYTE_MANIPULATIONS_H_INCLUDED
+#endif  // BYTE_MANIPULATIONS_H_INCLUDED
