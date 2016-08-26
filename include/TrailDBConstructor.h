@@ -25,15 +25,35 @@ extern "C" {
 #endif
 }
 
-class TrailDBConstructor {
+class StringPolicy {
+public:
+  using fields_t = std::vector<std::string>;
+  
+protected:
+  auto makeValues(const fields_t& values) -> std::pair<std::vector<const char*>, std::vector<std::uint64_t>>;
+};
+
+auto StringPolicy::makeValues(const fields_t &values) -> std::pair<std::vector<const char*>, std::vector<std::uint64_t>> {
+  std::vector<const char*> val_entries;
+  std::vector<std::uint64_t> val_len;
+
+  for (auto& s : values) {
+    val_entries.push_back(&s.front());
+    val_len.push_back(s.size());
+  }
+  return std::make_pair(val_entries, val_len);
+}
+
+
+template <typename DataPolicy = StringPolicy>
+class TrailDBConstructor : DataPolicy {
  public:
   TrailDBConstructor(std::string path, std::vector<std::string>& fields);
   ~TrailDBConstructor();
   void Finalize();
   void Append(TrailDB tdb);
   void Add(std::string cookie, std::uint64_t timestamp,
-           const std::vector<std::string>& values);
-  void RawCookie(std::string cookie, std::uint8_t res[16]);
+           const typename DataPolicy::fields_t& values);
 
  private:
   tdb_cons* cons_;
@@ -44,7 +64,8 @@ class TrailDBConstructor {
   static const unsigned TDB_KEY_SIZE_BYTES = 16;
 };
 
-TrailDBConstructor::TrailDBConstructor(std::string path,
+template <typename DataPolicy>
+TrailDBConstructor<DataPolicy>::TrailDBConstructor(std::string path,
                                        std::vector<std::string>& fields)
     : finalized_(false), opath_(path), ofields_(fields) {
   std::vector<const char*> ofield_names;
@@ -60,9 +81,11 @@ TrailDBConstructor::TrailDBConstructor(std::string path,
   }
 };
 
-TrailDBConstructor::~TrailDBConstructor() { tdb_cons_close(cons_); };
+template <typename DataPolicy>
+TrailDBConstructor<DataPolicy>::~TrailDBConstructor() { tdb_cons_close(cons_); };
 
-void TrailDBConstructor::Finalize() {
+template <typename DataPolicy>
+void TrailDBConstructor<DataPolicy>::Finalize() {
   if (!finalized_) {
     if (tdb_cons_finalize(cons_)) {
       throw TrailDBException();
@@ -71,28 +94,25 @@ void TrailDBConstructor::Finalize() {
   }
 }
 
-void TrailDBConstructor::Append(TrailDB tdb) {
+template <typename DataPolicy>
+void TrailDBConstructor<DataPolicy>::Append(TrailDB tdb) {
   if (tdb_cons_append(cons_, tdb.GetDB())) {
     throw TrailDBException();
   }
 }
 
-void TrailDBConstructor::Add(const std::string hexuuid,
+template <typename DataPolicy>
+void TrailDBConstructor<DataPolicy>::Add(const std::string hexuuid,
                              const std::uint64_t timestamp,
-                             const std::vector<std::string>& values) {
+                             const typename DataPolicy::fields_t& values) {
   std::uint8_t uuid[16];
   const std::uint8_t* hex_str =
       reinterpret_cast<const std::uint8_t*>(hexuuid.c_str());
   tdb_uuid_raw(hex_str, uuid);
 
-  std::vector<const char*> val_entries;
-  std::vector<std::uint64_t> val_len;
-  for (auto& s : values) {
-    val_entries.push_back(&s.front());
-    val_len.push_back(s.size());
-  }
-  const char** cvalues_entries = &val_entries.front();
-  const std::uint64_t* cval_len = &val_len.front();
+  auto val = DataPolicy::makeValues(values);
+  const char** cvalues_entries = &(val.first.front());
+  const std::uint64_t* cval_len = &(val.second.front());
 
   if (tdb_cons_add(cons_, uuid, timestamp, cvalues_entries, cval_len)) {
     throw TrailDBException();

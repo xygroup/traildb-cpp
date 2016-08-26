@@ -9,7 +9,7 @@
 
 int main() {
   std::vector<std::string> fields{"field1", "field2"};
-  TrailDBConstructor tdbCon("tdbtest", fields);
+  TrailDBConstructor<> tdbCon("tdbtest", fields);
   tdbCon.Add("12345678123456781234567812345678", 1230000, {"Chrome", "USA"});
   tdbCon.Add("12345678123456781234567812345678", 1400000, {"MacOSX", "BRA"});
   tdbCon.Add("12345678123456781234567812345678", 1600000, {"MacOSX", "BRA"});
