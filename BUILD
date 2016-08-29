@@ -10,6 +10,7 @@ deps = [
 "//traildb",
 ],
 prefix = "include",
+visibility = ["//visibility:public"],
 )
 
 cc_test(

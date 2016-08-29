@@ -30,7 +30,7 @@ public:
   using fields_t = std::vector<std::string>;
   
 protected:
-  auto makeValues(const fields_t& values) -> std::pair<std::vector<const char*>, std::vector<std::uint64_t>>;
+  auto makeValues(const fields_t &values) -> std::pair<std::vector<const char*>, std::vector<std::uint64_t>>;
 };
 
 auto StringPolicy::makeValues(const fields_t &values) -> std::pair<std::vector<const char*>, std::vector<std::uint64_t>> {
@@ -44,7 +44,6 @@ auto StringPolicy::makeValues(const fields_t &values) -> std::pair<std::vector<c
   return std::make_pair(val_entries, val_len);
 }
 
-
 template <typename DataPolicy = StringPolicy>
 class TrailDBConstructor : DataPolicy {
  public:
@@ -53,7 +52,7 @@ class TrailDBConstructor : DataPolicy {
   void Finalize();
   void Append(TrailDB tdb);
   void Add(std::string cookie, std::uint64_t timestamp,
-           const typename DataPolicy::fields_t& values);
+           const typename DataPolicy::fields_t &values);
 
  private:
   tdb_cons* cons_;
@@ -104,7 +103,7 @@ void TrailDBConstructor<DataPolicy>::Append(TrailDB tdb) {
 template <typename DataPolicy>
 void TrailDBConstructor<DataPolicy>::Add(const std::string hexuuid,
                              const std::uint64_t timestamp,
-                             const typename DataPolicy::fields_t& values) {
+                             const typename DataPolicy::fields_t &values) {
   std::uint8_t uuid[16];
   const std::uint8_t* hex_str =
       reinterpret_cast<const std::uint8_t*>(hexuuid.c_str());
