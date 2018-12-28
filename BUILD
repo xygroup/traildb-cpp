@@ -1,4 +1,4 @@
-cc_inc_library(
+cc_library(
 name = "traildb-cpp",
 hdrs = [
 "include/ByteManipulations.h",
@@ -9,7 +9,7 @@ hdrs = [
 deps = [
 "//traildb",
 ],
-prefix = "include",
+include_prefix = "include",
 visibility = ["//visibility:public"],
 )
 
@@ -22,7 +22,7 @@ size = "small",
 deps = [
 ":traildb-cpp",
 "//archive",
-"@gtest//:main",
+"//gtest:gtest_main",
 ],
 copts = [
 "-DBAZEL=1",
