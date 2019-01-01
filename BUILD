@@ -22,7 +22,7 @@ size = "small",
 deps = [
 ":traildb-cpp",
 "//archive",
-"//gtest:gtest_main",
+"@gtest//:gtest_main",
 ],
 copts = [
 "-DBAZEL=1",
